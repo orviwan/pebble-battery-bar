@@ -1,41 +1,71 @@
 #include <pebble.h>
 #include "battery-bar.h"
 
+typedef struct BatteryBarSettings {
+  bool is_charging;
+  bool hide_percent;
+  bool hide_icon;
+  uint8_t charge_percent;
+  GFont percent_font;
+  GRect percent_layer_rect;
+  GRect icon_layer_rect;
+  GColor color_normal;
+  GColor color_warning;
+  GColor color_danger;
+  GColor color_charging;
+  GColor color_state;
+} BatteryBarSettings;
+
+static Layer *s_battery_container_layer, *s_battery_icon_layer, *s_battery_bolt_layer;
+static TextLayer *s_battery_percent_layer;
+
+static GPath *s_battery_bolt_path_ptr = NULL;
+
+static GPathInfo s_battery_bolt_path_info = {
+  .num_points = 13,
+  .points = (GPoint []) {{4,4},{6,4},{6,3},{8,3},{8,2},{8,4},{12,4},{10,4},{10,5},{8,5},{8,6},{8,4},{11,4}}
+};
+
 void battery_bar_battery_update(BatteryChargeState charge_state) {
-  battery_bar.charge_percent = charge_state.charge_percent;
-  battery_bar.is_charging = charge_state.is_charging;
-  if(battery_bar.charge_percent == 0) {
-    battery_bar.charge_percent = 1;
+  BatteryBarSettings *data = layer_get_data(s_battery_container_layer);
+
+  data->charge_percent = charge_state.charge_percent;
+  data->is_charging = charge_state.is_charging;
+  if(data->charge_percent == 0) {
+    data->charge_percent = 1;
   }
 
-  battery_bar.color_state = battery_bar.color_normal;
-  if(battery_bar.charge_percent < 20) {
-    battery_bar.color_state = battery_bar.color_danger;
-  } else if(battery_bar.charge_percent < 30) {
-    battery_bar.color_state = battery_bar.color_warning;
+  if(data->charge_percent < 20) {
+    data->color_state = data->color_danger;
+  } else if(data->charge_percent < 30) {
+    data->color_state = data->color_warning;
+  } else {
+    data->color_state = data->color_normal;
   }
 
   static char s_txt[5];
-  snprintf(s_txt, sizeof(s_txt), "%u%%", battery_bar.charge_percent);
+  snprintf(s_txt, sizeof(s_txt), "%u%%", data->charge_percent);
   text_layer_set_text(s_battery_percent_layer, s_txt);
-  text_layer_set_text_color(s_battery_percent_layer, battery_bar.color_state);
+  text_layer_set_text_color(s_battery_percent_layer, data->color_state);
 
   layer_mark_dirty(s_battery_icon_layer);
 }
 
-void battery_bar_layer_update_callback(Layer *battery_layer, GContext* ctx) {
-  graphics_context_set_stroke_color(ctx, battery_bar.color_state);
+void battery_bar_layer_update_callback(Layer *icon_layer, GContext* ctx) {
+  BatteryBarSettings *data = layer_get_data(s_battery_container_layer);
+
+  graphics_context_set_stroke_color(ctx, data->color_state);
   graphics_draw_rect(ctx, GRect(0, 0, 16, 9));
   graphics_draw_rect(ctx, GRect(15, 2, 2, 5));
 
-  graphics_context_set_stroke_color(ctx, battery_bar.color_state);
-  graphics_context_set_fill_color(ctx, battery_bar.color_state);
+  graphics_context_set_stroke_color(ctx, data->color_state);
+  graphics_context_set_fill_color(ctx, data->color_state);
 
-  if(battery_bar.is_charging) {
-    graphics_context_set_stroke_color(ctx, battery_bar.color_charging);
+  if(data->is_charging) {
+    graphics_context_set_stroke_color(ctx, data->color_charging);
     gpath_draw_outline(ctx, s_battery_bolt_path_ptr);
   } else {
-    uint8_t width = ((battery_bar.charge_percent / 100.0) * 11.0);
+    uint8_t width = ((data->charge_percent / 100.0) * 11.0);
     if(width < 12) {
       width++;
     }
@@ -44,56 +74,53 @@ void battery_bar_layer_update_callback(Layer *battery_layer, GContext* ctx) {
 
 }
 
-void battery_bar_init_defaults() {
-  battery_bar.percent_font = fonts_get_system_font(FONT_KEY_GOTHIC_09);
-  battery_bar.container_left = 2;
-  battery_bar.container_top = 2;
-  battery_bar.container_layer_rect = GRect(battery_bar.container_left, battery_bar.container_top, 39, 10);
-  battery_bar.percent_layer_rect = GRect(0, -1, 21, 10);
-  battery_bar.icon_layer_rect = GRect(22, 0, 17, 9);
-  battery_bar.hide_percent = false;
-  battery_bar.hide_icon = false;
+void battery_bar_set_defaults(BatteryBarSettings *data) {
+  data->percent_font = fonts_get_system_font(FONT_KEY_GOTHIC_09);
+  data->percent_layer_rect = GRect(0, -1, 21, 10);
+  data->icon_layer_rect = GRect(22, 0, 17, 9);
+  data->hide_percent = false;
+  data->hide_icon = false;
   #ifdef PBL_COLOR
-    battery_bar.color_normal = GColorWhite;
-    battery_bar.color_warning = GColorOrange;
-    battery_bar.color_danger = GColorRed;
-    battery_bar.color_charging = GColorYellow;
+    data->color_normal = GColorWhite;
+    data->color_warning = GColorOrange;
+    data->color_danger = GColorRed;
+    data->color_charging = GColorYellow;
   #else
-    battery_bar.color_normal = GColorWhite;
-    battery_bar.color_warning = GColorWhite;
-    battery_bar.color_danger = GColorWhite;
-    battery_bar.color_charging = GColorWhite;
+    data->color_normal = GColorWhite;
+    data->color_warning = GColorWhite;
+    data->color_danger = GColorWhite;
+    data->color_charging = GColorWhite;
   #endif
 }
 
-void battery_bar_init(Layer *root_layer) {
-  if(!battery_bar._defaults_loaded) {
-    battery_bar_init_defaults();
-  }
+static BatteryBarLayer* battery_bar_layer_create(GRect frame) {
+  s_battery_container_layer = layer_create_with_data(frame, sizeof(BatteryBarSettings));
 
-  s_battery_container_layer = layer_create(battery_bar.container_layer_rect);
-  layer_add_child(root_layer, s_battery_container_layer);
+  BatteryBarSettings *data = layer_get_data(s_battery_container_layer);
+  battery_bar_set_defaults(data);
 
-  s_battery_percent_layer = text_layer_create(battery_bar.percent_layer_rect);
+  s_battery_percent_layer = text_layer_create(data->percent_layer_rect);
   text_layer_set_background_color(s_battery_percent_layer, GColorClear);
-  text_layer_set_text_color(s_battery_percent_layer, battery_bar.color_normal);
+  text_layer_set_text_color(s_battery_percent_layer, data->color_normal);
   text_layer_set_text_alignment(s_battery_percent_layer, GTextAlignmentRight);
-  text_layer_set_font(s_battery_percent_layer, battery_bar.percent_font);
+  text_layer_set_font(s_battery_percent_layer, data->percent_font);
+  layer_set_hidden(text_layer_get_layer(s_battery_percent_layer), data->hide_percent);
   layer_add_child(s_battery_container_layer, text_layer_get_layer(s_battery_percent_layer));
-  layer_set_hidden(text_layer_get_layer(s_battery_percent_layer), battery_bar.hide_percent);
 
   s_battery_bolt_path_ptr = gpath_create(&s_battery_bolt_path_info);
 
-  s_battery_icon_layer = layer_create(battery_bar.icon_layer_rect);
+  s_battery_icon_layer = layer_create(data->icon_layer_rect);
   layer_set_update_proc(s_battery_icon_layer, battery_bar_layer_update_callback);
   layer_add_child(s_battery_container_layer, s_battery_icon_layer);
-  layer_set_hidden(s_battery_icon_layer, battery_bar.hide_icon);
+  layer_set_hidden(s_battery_icon_layer, data->hide_icon);
 
   battery_bar_battery_update(battery_state_service_peek());
   battery_state_service_subscribe(&battery_bar_battery_update);
+
+  return s_battery_container_layer;
 }
 
-void battery_bar_deinit() {
+static void battery_bar_layer_destroy(BatteryBarLayer *battery_bar_layer) {
   battery_state_service_unsubscribe();
 
   gpath_destroy(s_battery_bolt_path_ptr);
