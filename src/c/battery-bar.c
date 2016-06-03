@@ -26,6 +26,7 @@ static GPathInfo s_battery_bolt_path_info = {
   .points = (GPoint []) {{4,4},{6,4},{6,3},{8,3},{8,2},{8,4},{12,4},{10,4},{10,5},{8,5},{8,6},{8,4},{11,4}}
 };
 
+// Check current battery level, change colors and set percentage level.
 static void battery_bar_battery_update(BatteryChargeState charge_state) {
   BatteryBarSettings *data = layer_get_data(s_battery_container_layer);
 
@@ -54,6 +55,7 @@ static void battery_bar_battery_update(BatteryChargeState charge_state) {
   layer_mark_dirty(s_battery_icon_layer);
 }
 
+// Draw the battery icon and charging indicator.
 static void battery_bar_layer_update_callback(Layer *icon_layer, GContext* ctx) {
   BatteryBarSettings *data = layer_get_data(s_battery_container_layer);
 
@@ -76,10 +78,12 @@ static void battery_bar_layer_update_callback(Layer *icon_layer, GContext* ctx) 
   }
 }
 
+// Force the battery bar to update and redraw.
 static void battery_bar_refresh() {
   battery_bar_battery_update(battery_state_service_peek());
 }
 
+// Create a set of default settings.
 static void battery_bar_set_defaults(BatteryBarSettings *data) {
   data->percent_font = fonts_get_system_font(FONT_KEY_GOTHIC_09);
   data->percent_layer_rect = GRect(0, -1, 21, 10);
@@ -99,6 +103,7 @@ static void battery_bar_set_defaults(BatteryBarSettings *data) {
   #endif
 }
 
+// Create a new battery bar layer and start monitoring.
 BatteryBarLayer* battery_bar_layer_create() {
   s_battery_container_layer = layer_create_with_data(GRect(0, 0, 39, 10), sizeof(BatteryBarSettings));
 
@@ -124,6 +129,7 @@ BatteryBarLayer* battery_bar_layer_create() {
   return s_battery_container_layer;
 }
 
+// Destroy the layer and its contents.
 void battery_bar_layer_destroy(BatteryBarLayer *battery_bar_layer) {
   battery_state_service_unsubscribe();
 
@@ -141,19 +147,21 @@ void battery_bar_layer_destroy(BatteryBarLayer *battery_bar_layer) {
   layer_destroy(s_battery_container_layer);
 }
 
+// Hide the percentage label.
 void battery_bar_set_percent_hidden(bool hidden) {
   BatteryBarSettings *data = layer_get_data(s_battery_container_layer);
   data->hide_percent = hidden;
   battery_bar_refresh();
-  //
 }
 
+// Hide the battery icon.
 void battery_bar_set_icon_hidden(bool hidden) {
   BatteryBarSettings *data = layer_get_data(s_battery_container_layer);
   data->hide_icon = hidden;
   battery_bar_refresh();
 }
 
+// Adjust the colors of the various battery level states.
 void battery_bar_set_colors(GColor normal, GColor warning, GColor danger, GColor charging) {
   BatteryBarSettings *data = layer_get_data(s_battery_container_layer);
   data->color_normal = normal;
@@ -163,6 +171,7 @@ void battery_bar_set_colors(GColor normal, GColor warning, GColor danger, GColor
   battery_bar_refresh();
 }
 
+// Move the battery bar position on screen (x, y).
 void battery_bar_set_position(GPoint position) {
   GRect frame = layer_get_frame(s_battery_container_layer);
   frame.origin = position;
