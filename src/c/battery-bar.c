@@ -26,7 +26,7 @@ static GPathInfo s_battery_bolt_path_info = {
   .points = (GPoint []) {{4,4},{6,4},{6,3},{8,3},{8,2},{8,4},{12,4},{10,4},{10,5},{8,5},{8,6},{8,4},{11,4}}
 };
 
-void battery_bar_battery_update(BatteryChargeState charge_state) {
+static void battery_bar_battery_update(BatteryChargeState charge_state) {
   BatteryBarSettings *data = layer_get_data(s_battery_container_layer);
 
   data->charge_percent = charge_state.charge_percent;
@@ -54,7 +54,7 @@ void battery_bar_battery_update(BatteryChargeState charge_state) {
   layer_mark_dirty(s_battery_icon_layer);
 }
 
-void battery_bar_layer_update_callback(Layer *icon_layer, GContext* ctx) {
+static void battery_bar_layer_update_callback(Layer *icon_layer, GContext* ctx) {
   BatteryBarSettings *data = layer_get_data(s_battery_container_layer);
 
   graphics_context_set_stroke_color(ctx, data->color_state);
@@ -76,11 +76,11 @@ void battery_bar_layer_update_callback(Layer *icon_layer, GContext* ctx) {
   }
 }
 
-void battery_bar_refresh() {
+static void battery_bar_refresh() {
   battery_bar_battery_update(battery_state_service_peek());
 }
 
-void battery_bar_set_defaults(BatteryBarSettings *data) {
+static void battery_bar_set_defaults(BatteryBarSettings *data) {
   data->percent_font = fonts_get_system_font(FONT_KEY_GOTHIC_09);
   data->percent_layer_rect = GRect(0, -1, 21, 10);
   data->icon_layer_rect = GRect(22, 0, 17, 9);
@@ -145,6 +145,7 @@ void battery_bar_set_percent_hidden(bool hidden) {
   BatteryBarSettings *data = layer_get_data(s_battery_container_layer);
   data->hide_percent = hidden;
   battery_bar_refresh();
+  //
 }
 
 void battery_bar_set_icon_hidden(bool hidden) {
