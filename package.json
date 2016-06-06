@@ -1,7 +1,7 @@
 {
   "name": "pebble-battery-bar",
   "author": "Jon Barlow",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "files": ["dist.zip"],
   "keywords": ["pebble-package"],
   "dependencies": {},

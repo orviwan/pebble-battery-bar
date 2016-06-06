@@ -2,7 +2,7 @@
 
 Pebble library for easily adding a battery bar to your app.
 
-![Screenshot of library in action](info/animation.gif)
+![Screenshot of library in action](https://raw.githubusercontent.com/orviwan/pebble-battery-bar/master/info/animation.gif)
 
 ## Usage
 
