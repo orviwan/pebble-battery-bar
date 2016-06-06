@@ -1,4 +1,4 @@
-# battery-bar
+# pebble-battery-bar
 
 Pebble library for easily adding a battery bar to your app.
 
@@ -6,7 +6,7 @@ Pebble library for easily adding a battery bar to your app.
 
 ## Usage
 
-`pebble package install ...`
+`pebble package install pebble-battery-bar`
 
 ````c
 // This is a simple example, demonstrating the basic usage.
