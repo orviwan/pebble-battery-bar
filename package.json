@@ -1,6 +1,6 @@
 {
-  "name": "battery-bar",
-  "author": "MakeAwesomeHappen",
+  "name": "pebble-battery-bar",
+  "author": "Jon Barlow",
   "version": "1.0.2",
   "files": ["dist.zip"],
   "keywords": ["pebble-package"],
