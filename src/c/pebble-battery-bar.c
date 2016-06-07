@@ -1,5 +1,6 @@
 #include <pebble.h>
 #include <pebble-battery-bar.h>
+#include <pebble-events/pebble-events.h>
 
 typedef struct BatteryBarSettings {
   bool is_charging;
@@ -18,6 +19,7 @@ typedef struct BatteryBarSettings {
 
 static Layer *s_battery_container_layer, *s_battery_icon_layer, *s_battery_bolt_layer;
 static TextLayer *s_battery_percent_layer;
+static EventHandle s_handle;
 
 static GPath *s_battery_bolt_path_ptr = NULL;
 
@@ -124,14 +126,14 @@ BatteryBarLayer* battery_bar_layer_create() {
   layer_add_child(s_battery_container_layer, s_battery_icon_layer);
 
   battery_bar_refresh();
-  battery_state_service_subscribe(&battery_bar_battery_update);
+  s_handle = events_battery_state_service_subscribe(&battery_bar_battery_update);
 
   return s_battery_container_layer;
 }
 
 // Destroy the layer and its contents.
 void battery_bar_layer_destroy(BatteryBarLayer *battery_bar_layer) {
-  battery_state_service_unsubscribe();
+  events_battery_state_service_unsubscribe(s_handle);
 
   gpath_destroy(s_battery_bolt_path_ptr);
   s_battery_bolt_path_ptr = NULL;
