@@ -10,7 +10,7 @@ Pebble library for easily adding a battery bar to your app.
 
 ````c
 // This is a simple example, demonstrating the basic usage.
-#include "battery-bar/battery-bar.h"
+#include <pebble-battery-bar/pebble-battery-bar.h>
 
 static BatteryBarLayer *s_battery_layer;
 

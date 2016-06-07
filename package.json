@@ -1,7 +1,9 @@
 {
   "name": "pebble-battery-bar",
   "author": "Jon Barlow",
-  "version": "1.0.5",
+  "repository": "orviwan/pebble-battery-bar",
+  "licence": "MIT",
+  "version": "1.0.7",
   "files": ["dist.zip"],
   "keywords": ["pebble-package"],
   "dependencies": {},
