@@ -72,7 +72,7 @@ static void battery_bar_layer_update_callback(Layer *icon_layer, GContext* ctx) 
     graphics_context_set_stroke_color(ctx, data->color_charging);
     gpath_draw_outline(ctx, s_battery_bolt_path_ptr);
   } else {
-    uint8_t width = ((data->charge_percent / 100.0) * 11.0);
+    uint8_t width = ((data->charge_percent * 11) / 100);
     if(width < 12) {
       width++;
     }
