@@ -1,28 +1,32 @@
 {
-  "name": "pebble-battery-bar",
-  "author": "Jon Barlow",
-  "repository": "orviwan/pebble-battery-bar",
-  "license": "MIT",
-  "version": "1.0.8",
-  "files": [
-    "dist.zip"
-  ],
-  "keywords": [
-    "pebble-package"
-  ],
-  "dependencies": {
-    "pebble-events": "^1.0.0"
-  },
-  "pebble": {
-    "projectType": "package",
-    "sdkVersion": "3",
-    "targetPlatforms": [
-      "aplite",
-      "basalt",
-      "chalk"
+    "author": "Jon Barlow",
+    "dependencies": {
+        "pebble-events": "^1.2.0"
+    },
+    "files": [
+        "dist.zip"
     ],
-    "resources": {
-      "media": []
-    }
-  }
+    "keywords": [
+        "pebble-package"
+    ],
+    "name": "pebble-battery-bar",
+    "pebble": {
+        "messageKeys": [],
+        "projectType": "package",
+        "resources": {
+            "media": []
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk",
+            "diorite",
+            "emery"
+        ],
+        "watchapp": {
+            "watchface": false
+        }
+    },
+    "version": "1.0.9"
 }
